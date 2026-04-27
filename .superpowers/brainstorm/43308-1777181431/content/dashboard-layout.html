@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SolBeam — Dashboard Layout Options</title>
+<script src="../../../../../../../.claude/plugins/cache/claude-plugins-official/superpowers/5.0.7/skills/brainstorming/scripts/helper.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0d0d0d; color: #e0e0e0; font-family: 'Inter', system-ui, sans-serif; padding: 24px; }
+
+  h1 { color: #fff; font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+  .subtitle { color: #777; font-size: 13px; margin-bottom: 24px; }
+
+  .layouts { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+  .layout-card {
+    border: 2px solid #222;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.15s;
+    background: #111;
+  }
+  .layout-card:hover { border-color: #444; transform: translateY(-2px); }
+  .layout-card.selected { border-color: #00ff96; }
+
+  .layout-label {
+    padding: 12px 16px;
+    background: #161616;
+    border-bottom: 1px solid #222;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .layout-label h3 { font-size: 14px; font-weight: 600; color: #fff; }
+  .layout-label .badge { font-size: 11px; padding: 2px 8px; border-radius: 20px; background: #1a3a2a; color: #00ff96; }
+  .layout-label .badge.neutral { background: #1e1e1e; color: #888; }
+
+  /* Mockup styles */
+  .mockup-wrap { padding: 12px; }
+  .mock-shell {
+    background: #0a0a0a;
+    border-radius: 8px;
+    border: 1px solid #1e1e1e;
+    overflow: hidden;
+    height: 280px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Layout A: Sidebar + Main */
+  .shell-a { flex-direction: row; }
+  .mock-sidebar-a {
+    width: 56px;
+    background: #111;
+    border-right: 1px solid #1e1e1e;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 0;
+    gap: 8px;
+  }
+  .sidebar-icon { width: 28px; height: 28px; border-radius: 6px; background: #1e1e1e; }
+  .sidebar-icon.active { background: #00ff96; opacity: 0.9; }
+  .mock-main-a { flex: 1; display: flex; flex-direction: column; }
+  .topbar-a {
+    height: 36px;
+    border-bottom: 1px solid #1e1e1e;
+    background: #0d0d0d;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    gap: 8px;
+  }
+  .score-pill { height: 20px; width: 60px; border-radius: 4px; background: #0f2a1a; border: 1px solid #00ff96; }
+  .score-pill.warn { background: #2a1a0f; border-color: #ff8c00; }
+  .content-a { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: #1e1e1e; }
+  .content-a > div { background: #0a0a0a; padding: 8px; }
+  .mock-feed-row { height: 8px; background: #1a1a1a; border-radius: 3px; margin-bottom: 5px; }
+  .mock-feed-row.hot { background: #0f2a1a; }
+  .mock-feed-row.rug { background: #2a0f0f; }
+  .mock-chart { width: 100%; height: 80px; background: #0d0d0d; border-radius: 4px; position: relative; overflow: hidden; }
+  .chart-line { position: absolute; bottom: 20px; left: 0; width: 100%; height: 2px; }
+  .chart-svg { width: 100%; height: 100%; }
+
+  /* Layout B: Wide top bar + columns */
+  .shell-b { flex-direction: column; }
+  .topbar-b {
+    height: 44px;
+    background: #111;
+    border-bottom: 1px solid #1e1e1e;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    gap: 8px;
+  }
+  .nav-pill { height: 22px; width: 52px; border-radius: 20px; background: #1e1e1e; }
+  .nav-pill.active { background: #00ff96; opacity: 0.85; }
+  .content-b { flex: 1; display: grid; grid-template-columns: 2fr 1.2fr 1fr; gap: 1px; background: #1e1e1e; }
+  .content-b > div { background: #0a0a0a; padding: 8px; }
+  .mini-label { font-size: 9px; color: #555; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .mock-table-row { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; }
+  .mock-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .mock-bar { height: 7px; border-radius: 3px; background: #1a1a1a; }
+  .mock-score-big { font-size: 28px; font-weight: 700; color: #ff8c00; text-align: center; margin-top: 16px; }
+  .mock-score-label { font-size: 9px; color: #666; text-align: center; text-transform: uppercase; letter-spacing: 1px; }
+  .mock-stat { margin-bottom: 8px; }
+  .mock-stat-val { height: 16px; width: 50px; background: #1a1a1a; border-radius: 3px; }
+  .mock-stat-label { height: 6px; width: 70px; background: #141414; border-radius: 3px; margin-top: 3px; }
+
+  /* Layout C: Dense trading terminal */
+  .shell-c { flex-direction: column; }
+  .topbar-c {
+    height: 32px;
+    background: #080808;
+    border-bottom: 1px solid #1a1a1a;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    gap: 6px;
+  }
+  .mono-tag { font-size: 9px; font-family: monospace; color: #00ff96; }
+  .content-c { flex: 1; display: grid; grid-template-columns: 1.5fr 1fr 0.8fr; grid-template-rows: 1fr 1fr; gap: 1px; background: #111; }
+  .content-c > div { background: #0a0a0a; padding: 6px; }
+  .content-c > div:first-child { grid-row: span 2; }
+
+  .desc { padding: 12px 16px 14px; background: #0d0d0d; border-top: 1px solid #1e1e1e; }
+  .desc p { font-size: 12px; color: #666; line-height: 1.5; }
+  .desc strong { color: #aaa; }
+
+  .selection-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: #111; border-top: 1px solid #222;
+    padding: 12px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .sel-text { font-size: 13px; color: #777; }
+  .sel-text span { color: #00ff96; }
+  .sel-btn {
+    background: #00ff96; color: #000; border: none;
+    padding: 8px 20px; border-radius: 6px; font-size: 13px; font-weight: 600;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<h1>SolBeam — Dashboard Layout</h1>
+<p class="subtitle">Pick the layout that feels right for how you'll use this daily. Click to select.</p>
+
+<div class="layouts">
+
+  <!-- Layout A: Sidebar nav -->
+  <div class="layout-card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="layout-label">
+      <h3>A — Sidebar + Live Feed</h3>
+      <span class="badge neutral">Familiar</span>
+    </div>
+    <div class="mockup-wrap">
+      <div class="mock-shell shell-a">
+        <div class="mock-sidebar-a">
+          <div class="sidebar-icon active"></div>
+          <div class="sidebar-icon"></div>
+          <div class="sidebar-icon"></div>
+          <div class="sidebar-icon"></div>
+          <div class="sidebar-icon"></div>
+        </div>
+        <div class="mock-main-a">
+          <div class="topbar-a">
+            <div style="width:80px;height:14px;background:#1e1e1e;border-radius:3px;"></div>
+            <div style="flex:1"></div>
+            <div class="score-pill"></div>
+            <div class="score-pill warn"></div>
+          </div>
+          <div class="content-a">
+            <div>
+              <div class="mini-label">Live Feed</div>
+              <div class="mock-feed-row hot" style="width:90%"></div>
+              <div class="mock-feed-row" style="width:75%"></div>
+              <div class="mock-feed-row hot" style="width:85%"></div>
+              <div class="mock-feed-row rug" style="width:70%"></div>
+              <div class="mock-feed-row" style="width:80%"></div>
+              <div class="mock-feed-row hot" style="width:95%"></div>
+              <div class="mock-feed-row" style="width:65%"></div>
+            </div>
+            <div>
+              <div class="mini-label">Signal Score</div>
+              <div class="mock-chart">
+                <svg class="chart-svg" viewBox="0 0 100 60" preserveAspectRatio="none">
+                  <polyline points="0,50 15,40 30,35 45,20 60,15 75,8 90,12 100,5" fill="none" stroke="#00ff96" stroke-width="1.5"/>
+                  <polyline points="0,50 15,40 30,35 45,20 60,15 75,8 90,12 100,5 100,60 0,60" fill="rgba(0,255,150,0.05)" stroke="none"/>
+                </svg>
+              </div>
+              <div style="display:flex;gap:6px;margin-top:6px;">
+                <div style="height:16px;flex:1;border-radius:3px;background:#0f2a1a;border:1px solid #00ff9644"></div>
+                <div style="height:16px;flex:1;border-radius:3px;background:#2a0f0f;border:1px solid #ff444444"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="desc">
+      <p><strong>Vertical sidebar</strong> nav like VS Code / karoshi.fun. Left panel = live token feed scored 0–100. Right panel = chart + signal breakdown. Most screen space goes to the feed.</p>
+    </div>
+  </div>
+
+  <!-- Layout B: Top nav + 3 columns -->
+  <div class="layout-card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="layout-label">
+      <h3>B — Top Nav + 3-Column View</h3>
+      <span class="badge">⭐ Recommended</span>
+    </div>
+    <div class="mockup-wrap">
+      <div class="mock-shell shell-b">
+        <div class="topbar-b">
+          <div style="width:60px;height:16px;background:#00ff9622;border:1px solid #00ff9644;border-radius:4px;"></div>
+          <div class="nav-pill"></div>
+          <div class="nav-pill active"></div>
+          <div class="nav-pill"></div>
+          <div class="nav-pill"></div>
+          <div style="flex:1"></div>
+          <div style="width:20px;height:20px;border-radius:50%;background:#1e1e1e;"></div>
+        </div>
+        <div class="content-b">
+          <!-- Feed column -->
+          <div>
+            <div class="mini-label">Token Feed — All Sources</div>
+            <div class="mock-table-row">
+              <div class="mock-dot" style="background:#00ff96"></div>
+              <div class="mock-bar" style="width:55px"></div>
+              <div style="flex:1"></div>
+              <div style="height:14px;width:28px;border-radius:3px;background:#0f2a1a;border:1px solid #00ff9644;font-size:8px;color:#00ff96;display:flex;align-items:center;justify-content:center;">82</div>
+            </div>
+            <div class="mock-table-row">
+              <div class="mock-dot" style="background:#ff8c00"></div>
+              <div class="mock-bar" style="width:40px"></div>
+              <div style="flex:1"></div>
+              <div style="height:14px;width:28px;border-radius:3px;background:#2a1a0f;border:1px solid #ff8c0044;font-size:8px;color:#ff8c00;display:flex;align-items:center;justify-content:center;">61</div>
+            </div>
+            <div class="mock-table-row">
+              <div class="mock-dot" style="background:#00ff96"></div>
+              <div class="mock-bar" style="width:65px"></div>
+              <div style="flex:1"></div>
+              <div style="height:14px;width:28px;border-radius:3px;background:#0f2a1a;border:1px solid #00ff9644;font-size:8px;color:#00ff96;display:flex;align-items:center;justify-content:center;">77</div>
+            </div>
+            <div class="mock-table-row">
+              <div class="mock-dot" style="background:#ff4444"></div>
+              <div class="mock-bar" style="width:48px"></div>
+              <div style="flex:1"></div>
+              <div style="height:14px;width:28px;border-radius:3px;background:#2a0f0f;border:1px solid #ff444444;font-size:8px;color:#ff4444;display:flex;align-items:center;justify-content:center;">23</div>
+            </div>
+            <div class="mock-table-row">
+              <div class="mock-dot" style="background:#00ff96"></div>
+              <div class="mock-bar" style="width:72px"></div>
+              <div style="flex:1"></div>
+              <div style="height:14px;width:28px;border-radius:3px;background:#0f2a1a;border:1px solid #00ff9644;font-size:8px;color:#00ff96;display:flex;align-items:center;justify-content:center;">91</div>
+            </div>
+            <div class="mock-table-row">
+              <div class="mock-dot" style="background:#888"></div>
+              <div class="mock-bar" style="width:35px"></div>
+              <div style="flex:1"></div>
+              <div style="height:14px;width:28px;border-radius:3px;background:#1a1a1a;font-size:8px;color:#666;display:flex;align-items:center;justify-content:center;">44</div>
+            </div>
+          </div>
+          <!-- Market + Sentiment column -->
+          <div>
+            <div class="mini-label">Market Pulse</div>
+            <div class="mock-score-big">67</div>
+            <div class="mock-score-label">Pumping</div>
+            <div style="margin-top:12px;">
+              <div class="mock-stat">
+                <div class="mock-stat-val" style="background:#0f2a1a;border:1px solid #00ff9622"></div>
+                <div class="mock-stat-label"></div>
+              </div>
+              <div class="mock-stat">
+                <div class="mock-stat-val" style="background:#2a0f0f;border:1px solid #ff444422"></div>
+                <div class="mock-stat-label"></div>
+              </div>
+              <div class="mock-stat">
+                <div class="mock-stat-val"></div>
+                <div class="mock-stat-label"></div>
+              </div>
+            </div>
+          </div>
+          <!-- Positions column -->
+          <div>
+            <div class="mini-label">Open Positions</div>
+            <div style="background:#0f1f14;border:1px solid #00ff9622;border-radius:4px;padding:5px;margin-bottom:5px;">
+              <div style="height:7px;width:50px;background:#00ff9633;border-radius:2px;margin-bottom:3px;"></div>
+              <div style="height:9px;width:36px;background:#00ff96;border-radius:2px;opacity:0.7;"></div>
+            </div>
+            <div style="background:#1f1408;border:1px solid #ff8c0022;border-radius:4px;padding:5px;">
+              <div style="height:7px;width:45px;background:#ff8c0033;border-radius:2px;margin-bottom:3px;"></div>
+              <div style="height:9px;width:30px;background:#ff8c00;border-radius:2px;opacity:0.5;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="desc">
+      <p><strong>Top navigation</strong> between pages. Three-column main view: live scored feed (left) + market sentiment + signal breakdown (centre) + open positions with break-even alerts (right). Everything visible at once.</p>
+    </div>
+  </div>
+
+  <!-- Layout C: Terminal-style -->
+  <div class="layout-card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="layout-label">
+      <h3>C — Dense Terminal View</h3>
+      <span class="badge neutral">Power user</span>
+    </div>
+    <div class="mockup-wrap">
+      <div class="mock-shell shell-c">
+        <div class="topbar-c">
+          <div class="mono-tag">SOLBEAM</div>
+          <div style="flex:1"></div>
+          <div class="mono-tag" style="color:#ff8c00">SOL $148.23</div>
+          <div class="mono-tag" style="margin-left:8px">SENTIMENT: 67</div>
+        </div>
+        <div class="content-c">
+          <div>
+            <div class="mini-label">Feed</div>
+            <div style="font-family:monospace;font-size:9px;color:#666;line-height:1.8;">
+              <div><span style="color:#00ff96">●</span> WOJAK &nbsp;[91] &nbsp;+smart ×3 &nbsp;$42K mcap</div>
+              <div><span style="color:#00ff96">●</span> BONKDAO [82] &nbsp;+smart ×1 &nbsp;$18K mcap</div>
+              <div><span style="color:#ff8c00">●</span> PEPEAI &nbsp;[61] &nbsp;migration &nbsp;$290K</div>
+              <div><span style="color:#ff4444">●</span> SCAM &nbsp;&nbsp;[23] &nbsp;⚠ dev sold &nbsp;rug</div>
+              <div><span style="color:#00ff96">●</span> TRUMP2 &nbsp;[77] &nbsp;+smart ×2 &nbsp;$8K mcap</div>
+              <div><span style="color:#888">●</span> FLOP &nbsp;&nbsp;[44] &nbsp;flat &nbsp;&nbsp;&nbsp;&nbsp;$110K</div>
+              <div><span style="color:#00ff96">●</span> DOGE3 &nbsp;&nbsp;[88] &nbsp;+smart ×4 &nbsp;$3K mcap</div>
+            </div>
+          </div>
+          <div>
+            <div class="mini-label">Selected Token</div>
+            <div class="mock-chart" style="height:55px;">
+              <svg viewBox="0 0 100 40" preserveAspectRatio="none" width="100%" height="100%">
+                <polyline points="0,35 10,30 20,28 30,15 40,10 50,6 60,9 70,4 80,7 90,3 100,2" fill="none" stroke="#00ff96" stroke-width="1.5"/>
+              </svg>
+            </div>
+          </div>
+          <div>
+            <div class="mini-label">Positions</div>
+            <div style="font-family:monospace;font-size:9px;color:#666;line-height:2;">
+              <div><span style="color:#00ff96">WOJAK</span> +142%</div>
+              <div><span style="color:#ff8c00">PEPEAI</span> +12%</div>
+            </div>
+          </div>
+          <div>
+            <div class="mini-label">Score Breakdown</div>
+            <div style="font-family:monospace;font-size:8px;color:#555;line-height:1.9;">
+              <div>Smart Money &nbsp;24/30</div>
+              <div>Token Health &nbsp;21/25</div>
+              <div>Momentum &nbsp;&nbsp;&nbsp;20/25</div>
+              <div>Deployer &nbsp;&nbsp;&nbsp;&nbsp;14/20</div>
+            </div>
+          </div>
+          <div>
+            <div class="mini-label">Alerts</div>
+            <div style="font-family:monospace;font-size:8px;color:#ff8c00;line-height:1.9;">
+              <div>⚠ PEPEAI near BE</div>
+              <div style="color:#555">─ no other alerts</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="desc">
+      <p><strong>Monospace terminal aesthetic</strong>. Maximum data density. No whitespace wasted. Best for power users who want to scan 20+ tokens at a glance without clicking around.</p>
+    </div>
+  </div>
+
+  <!-- Layout D: Mobile-first -->
+  <div class="layout-card" data-choice="d" onclick="toggleSelect(this)">
+    <div class="layout-label">
+      <h3>D — Mobile-First Card Feed</h3>
+      <span class="badge neutral">Easy to read</span>
+    </div>
+    <div class="mockup-wrap">
+      <div class="mock-shell" style="flex-direction:column;">
+        <div style="height:36px;background:#111;border-bottom:1px solid #1e1e1e;display:flex;align-items:center;padding:0 12px;gap:8px;">
+          <div style="width:60px;height:14px;background:#00ff9622;border:1px solid #00ff9644;border-radius:4px;"></div>
+          <div style="flex:1"></div>
+          <div style="width:14px;height:14px;border-radius:3px;background:#1e1e1e;"></div>
+        </div>
+        <div style="flex:1;padding:8px;display:flex;flex-direction:column;gap:6px;overflow:hidden;">
+          <div style="background:#111;border:1px solid #0f2a1a;border-left:3px solid #00ff96;border-radius:6px;padding:8px;display:flex;align-items:center;gap:8px;">
+            <div>
+              <div style="font-size:11px;font-weight:600;color:#fff;margin-bottom:2px;">WOJAK</div>
+              <div style="font-size:9px;color:#555;">Pump.fun · 2m ago · $42K</div>
+            </div>
+            <div style="flex:1"></div>
+            <div style="text-align:right;">
+              <div style="font-size:16px;font-weight:700;color:#00ff96;">91</div>
+              <div style="font-size:8px;color:#00ff96;">MOONSHOT</div>
+            </div>
+          </div>
+          <div style="background:#111;border:1px solid #0f2a1a;border-left:3px solid #00ff96;border-radius:6px;padding:8px;display:flex;align-items:center;gap:8px;">
+            <div>
+              <div style="font-size:11px;font-weight:600;color:#fff;margin-bottom:2px;">DOGE3</div>
+              <div style="font-size:9px;color:#555;">Pump.fun · 4m ago · $8K</div>
+            </div>
+            <div style="flex:1"></div>
+            <div style="text-align:right;">
+              <div style="font-size:16px;font-weight:700;color:#00ff96;">88</div>
+              <div style="font-size:8px;color:#00ff96;">RUNNER</div>
+            </div>
+          </div>
+          <div style="background:#111;border:1px solid #2a1a0f;border-left:3px solid #ff8c00;border-radius:6px;padding:8px;display:flex;align-items:center;gap:8px;">
+            <div>
+              <div style="font-size:11px;font-weight:600;color:#fff;margin-bottom:2px;">PEPEAI</div>
+              <div style="font-size:9px;color:#555;">Raydium · migrated · $290K</div>
+            </div>
+            <div style="flex:1"></div>
+            <div style="text-align:right;">
+              <div style="font-size:16px;font-weight:700;color:#ff8c00;">61</div>
+              <div style="font-size:8px;color:#ff8c00;">MOD. PUMP</div>
+            </div>
+          </div>
+          <div style="background:#111;border:1px solid #1e1e1e;border-left:3px solid #333;border-radius:6px;padding:8px;display:flex;align-items:center;gap:8px;">
+            <div>
+              <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:2px;">SCAM <span style="color:#ff4444;font-size:9px;">⚠ DISQUALIFIED</span></div>
+              <div style="font-size:9px;color:#444;">Dev sold 80% · No LP lock</div>
+            </div>
+            <div style="flex:1"></div>
+            <div style="text-align:right;">
+              <div style="font-size:16px;font-weight:700;color:#ff4444;">23</div>
+              <div style="font-size:8px;color:#ff4444;">RUG</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="desc">
+      <p><strong>Swipeable card feed</strong> optimised for glanceability. Each token is a card with colour-coded signal tier. Works great on mobile too. Click a card to expand full signal breakdown.</p>
+    </div>
+  </div>
+
+</div>
+
+<div style="margin-top:20px;padding:14px;background:#0f0f0f;border:1px solid #1e1e1e;border-radius:8px;">
+  <p style="font-size:12px;color:#555;line-height:1.6;">
+    <strong style="color:#888;">Note:</strong> These are rough wireframes — not the final UI. The actual SolBeam UI will have polished dark-mode styling, a neon green + amber signal colour system, and smooth real-time updates. The layout choice determines information hierarchy, not aesthetics.
+  </p>
+</div>
+</body>
+</html>

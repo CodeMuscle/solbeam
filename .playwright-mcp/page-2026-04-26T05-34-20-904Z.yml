@@ -1,0 +1,18 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]: K
+    - heading "Karoshi.Fun" [level=1] [ref=e5]
+  - generic [ref=e6]:
+    - generic [ref=e7]: 🔒
+    - heading "Premium access required" [level=2] [ref=e8]
+    - paragraph [ref=e9]: Alpha Scanner, Trade Signals, and more are available exclusively to Karoshi's PRIVATE members.
+    - link "Subscribe on Whop" [ref=e10] [cursor=pointer]:
+      - /url: https://whop.com/joined/karoshi-private/products/karoshi-private/
+    - paragraph [ref=e11]:
+      - text: Already a member? Make sure you signed up with the same email you use on Whop, then
+      - link "refresh your dashboard" [ref=e12] [cursor=pointer]:
+        - /url: /dashboard
+      - text: .
+  - paragraph [ref=e13]:
+    - link "Back to dashboard" [ref=e14] [cursor=pointer]:
+      - /url: /dashboard

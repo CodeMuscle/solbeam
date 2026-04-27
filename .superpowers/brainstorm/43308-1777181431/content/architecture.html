@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SolBeam — Architecture</title>
+<script src="../../../../../../../.claude/plugins/cache/claude-plugins-official/superpowers/5.0.7/skills/brainstorming/scripts/helper.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0d0d0d; color: #e0e0e0; font-family: 'Inter', system-ui, sans-serif; padding: 24px 28px; }
+  h1 { color: #fff; font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 28px; }
+  h2 { font-size: 13px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 14px; }
+
+  .pipeline {
+    display: flex; align-items: stretch; gap: 0;
+    background: #111; border: 1px solid #1e1e1e; border-radius: 10px;
+    overflow: hidden; margin-bottom: 28px;
+  }
+  .pipe-col {
+    flex: 1; padding: 16px;
+    border-right: 1px solid #1e1e1e;
+  }
+  .pipe-col:last-child { border-right: none; }
+  .pipe-col h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #555; margin-bottom: 10px; }
+  .pipe-item {
+    font-size: 12px; color: #999;
+    padding: 7px 10px; border-radius: 5px;
+    background: #161616; margin-bottom: 5px;
+    border-left: 2px solid #2a2a2a;
+    line-height: 1.4;
+  }
+  .pipe-item.green { border-left-color: #00ff96; color: #ccc; }
+  .pipe-item.amber { border-left-color: #ff8c00; color: #ccc; }
+  .pipe-item.blue  { border-left-color: #4da6ff; color: #ccc; }
+  .pipe-item.purple{ border-left-color: #b56bff; color: #ccc; }
+  .pipe-item small { display: block; font-size: 10px; color: #555; margin-top: 2px; }
+
+  .arrow { display: flex; align-items: center; padding: 0 6px; color: #333; font-size: 18px; }
+
+  .pages-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    margin-bottom: 28px;
+  }
+  .page-card {
+    background: #111; border: 1px solid #1e1e1e; border-radius: 8px;
+    padding: 14px;
+  }
+  .page-card .route { font-family: monospace; font-size: 11px; color: #555; margin-bottom: 6px; }
+  .page-card h3 { font-size: 13px; font-weight: 600; color: #ddd; margin-bottom: 6px; }
+  .page-card p { font-size: 11px; color: #666; line-height: 1.5; }
+  .page-card .tag {
+    display: inline-block; font-size: 10px; padding: 2px 7px;
+    border-radius: 20px; margin-top: 8px;
+  }
+  .tag.live { background: #0f2a1a; color: #00ff96; border: 1px solid #00ff9633; }
+  .tag.static { background: #1e1e1e; color: #777; border: 1px solid #2a2a2a; }
+  .tag.signal { background: #1a1a2a; color: #4da6ff; border: 1px solid #4da6ff33; }
+
+  .signal-table {
+    width: 100%; border-collapse: collapse;
+    background: #111; border: 1px solid #1e1e1e;
+    border-radius: 8px; overflow: hidden;
+    margin-bottom: 28px;
+  }
+  .signal-table th {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+    color: #555; padding: 10px 14px; text-align: left;
+    background: #0d0d0d; border-bottom: 1px solid #1e1e1e;
+  }
+  .signal-table td { font-size: 12px; color: #999; padding: 9px 14px; border-bottom: 1px solid #141414; }
+  .signal-table tr:last-child td { border-bottom: none; }
+  .signal-table td:first-child { color: #ccc; font-weight: 500; }
+  .signal-table td:nth-child(2) { font-family: monospace; color: #4da6ff; }
+  .w-pill { display: inline-block; height: 6px; border-radius: 3px; background: #00ff96; vertical-align: middle; margin-right: 6px; }
+
+  .disqualifiers {
+    background: #130808; border: 1px solid #ff444422; border-radius: 8px;
+    padding: 14px 16px; margin-bottom: 28px;
+  }
+  .disqualifiers h3 { font-size: 12px; color: #ff4444; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .dq-item { font-size: 12px; color: #888; padding: 5px 0; border-bottom: 1px solid #1a1010; display: flex; align-items: center; gap: 8px; }
+  .dq-item:last-child { border-bottom: none; }
+  .dq-item::before { content: "⛔"; font-size: 11px; }
+
+  .exit-box {
+    background: #0f1a0f; border: 1px solid #00ff9622; border-radius: 8px;
+    padding: 14px 16px; margin-bottom: 28px;
+  }
+  .exit-box h3 { font-size: 12px; color: #00ff96; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .exit-row { display: flex; align-items: center; gap: 12px; padding: 7px 0; border-bottom: 1px solid #0f1f0f; font-size: 12px; color: #888; }
+  .exit-row:last-child { border-bottom: none; }
+  .tier-badge { font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 600; min-width: 90px; text-align: center; }
+</style>
+</head>
+<body>
+
+<h1>SolBeam — Full System Design</h1>
+<p class="subtitle">Section 1: Architecture · Data Pipeline · Signal Engine · Pages</p>
+
+<!-- DATA PIPELINE -->
+<h2>Data Pipeline (Hybrid Approach C)</h2>
+<div class="pipeline">
+  <div class="pipe-col">
+    <h3>📡 Sources</h3>
+    <div class="pipe-item green">DexScreener API<small>New pairs, OHLCV, volume · poll every 10s</small></div>
+    <div class="pipe-item green">Helius Webhooks<small>Smart wallet txs · sub-second</small></div>
+    <div class="pipe-item green">Jupiter Price API<small>Live SPL prices · position monitoring</small></div>
+    <div class="pipe-item green">Helius DAS API<small>Token metadata, holder data, deployer history</small></div>
+  </div>
+  <div class="arrow">→</div>
+  <div class="pipe-col">
+    <h3>⚙️ Ingest Layer</h3>
+    <div class="pipe-item amber">Next.js API Route<small>/api/webhooks/helius · validates secret</small></div>
+    <div class="pipe-item amber">Cron Job (Vercel)<small>/api/cron/scan · every 10s via Vercel cron</small></div>
+    <div class="pipe-item amber">Upstash Redis Cache<small>Hot token data · 60s TTL</small></div>
+  </div>
+  <div class="arrow">→</div>
+  <div class="pipe-col">
+    <h3>🧠 Signal Engine</h3>
+    <div class="pipe-item blue">Score Calculator<small>0–100 composite score per token</small></div>
+    <div class="pipe-item blue">Disqualifier Filter<small>Hard veto rules applied first</small></div>
+    <div class="pipe-item blue">Outcome Classifier<small>MOONSHOT / RUNNER / MODERATE / FLAT / DUMP / RUG</small></div>
+    <div class="pipe-item blue">Exit Monitor<small>Price vs entry · break-even alerts</small></div>
+  </div>
+  <div class="arrow">→</div>
+  <div class="pipe-col">
+    <h3>💾 Storage + UI</h3>
+    <div class="pipe-item purple">Supabase Postgres<small>Tokens, txs, positions, scores, history</small></div>
+    <div class="pipe-item purple">Supabase Realtime<small>Pushes live updates to dashboard UI</small></div>
+    <div class="pipe-item purple">Telegram Bot<small>Break-even + high-score alerts</small></div>
+    <div class="pipe-item purple">Next.js Dashboard<small>Sidebar layout A · your personal UI</small></div>
+  </div>
+</div>
+
+<!-- PAGES -->
+<h2>Pages (Sidebar Navigation)</h2>
+<div class="pages-grid">
+  <div class="page-card">
+    <div class="route">/dashboard</div>
+    <h3>🔴 Live Feed</h3>
+    <p>All scored tokens in real-time. Filterable by source (Pump.fun / Raydium / trending), min score threshold, and outcome tier. Click any row to open token detail panel.</p>
+    <span class="tag live">Live · Realtime</span>
+  </div>
+  <div class="page-card">
+    <div class="route">/tokens/[mint]</div>
+    <h3>📊 Token Deep-Dive</h3>
+    <p>Full signal breakdown (all 4 categories + score), TradingView chart, top holders, recent transactions, deployer history, and risk flags.</p>
+    <span class="tag signal">On-demand</span>
+  </div>
+  <div class="page-card">
+    <div class="route">/wallets</div>
+    <h3>🐋 Smart Wallets</h3>
+    <p>Your curated list of tracked smart money wallets. Win rate, PnL estimate, most traded tokens, live tx feed. Add/remove wallets.</p>
+    <span class="tag live">Live · Webhook</span>
+  </div>
+  <div class="page-card">
+    <div class="route">/positions</div>
+    <h3>📍 Open Positions</h3>
+    <p>Tokens you've manually marked as "entered". Shows live P&L %, entry price, current price, and fires an alert when price hits break-even.</p>
+    <span class="tag live">Live · Price poll</span>
+  </div>
+  <div class="page-card">
+    <div class="route">/backtester</div>
+    <h3>🧪 Signal Backtester</h3>
+    <p>Replay the last 30 days of token launches against your current signal weights. See win rate, avg return per tier, and calibrate thresholds.</p>
+    <span class="tag signal">Offline analysis</span>
+  </div>
+  <div class="page-card">
+    <div class="route">/settings</div>
+    <h3>⚙️ Config</h3>
+    <p>Signal weight tuning sliders, minimum score threshold for alerts, Telegram bot token, tracked wallet addresses, take-profit tier thresholds.</p>
+    <span class="tag static">Settings</span>
+  </div>
+</div>
+
+<!-- SIGNAL ENGINE -->
+<h2>Composite Score (0 – 100)</h2>
+<table class="signal-table">
+  <thead>
+    <tr>
+      <th>Category</th>
+      <th>Max Pts</th>
+      <th>Key Signals</th>
+      <th>Error-Rate Reducers</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>🐋 Smart Money</td>
+      <td><span class="w-pill" style="width:48px"></span>30</td>
+      <td># tracked wallets that bought · time since entry · wallet win rate</td>
+      <td>Cluster detection — docks pts if all buyers are the same entity</td>
+    </tr>
+    <tr>
+      <td>🔒 Token Health</td>
+      <td><span class="w-pill" style="width:40px;background:#4da6ff"></span>25</td>
+      <td>LP locked/burned · mint renounced · freeze disabled · dev wallet %</td>
+      <td>Bundle launch detection · insider sniper scan · pre-launch wallets</td>
+    </tr>
+    <tr>
+      <td>📈 Momentum</td>
+      <td><span class="w-pill" style="width:40px;background:#ff8c00"></span>25</td>
+      <td>Volume/mcap ratio · holder growth rate · buy/sell ratio · social links live</td>
+      <td>Wash-trade detection (same wallet cycling buys/sells)</td>
+    </tr>
+    <tr>
+      <td>🕵️ Deployer</td>
+      <td><span class="w-pill" style="width:32px;background:#b56bff"></span>20</td>
+      <td>Previous token outcomes · wallet age · deployer SOL balance history</td>
+      <td>Same deployer rugged 2+ tokens → instant disqualify</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- DISQUALIFIERS -->
+<div class="disqualifiers">
+  <h3>Hard Disqualifiers — Vetoes regardless of score</h3>
+  <div class="dq-item">Top-10 wallets hold &gt; 70% of supply</div>
+  <div class="dq-item">Sniper wallets hold &gt; 30% of supply</div>
+  <div class="dq-item">Dev wallet has sold &gt; 50% of their allocation already</div>
+  <div class="dq-item">Same deployer address rugged 2 or more previous tokens</div>
+  <div class="dq-item">Bundled launch detected (coordinated multi-wallet first buy)</div>
+  <div class="dq-item">Mint authority NOT renounced on a token older than 10 minutes</div>
+</div>
+
+<!-- EXIT LOGIC -->
+<div class="exit-box">
+  <h3>Dynamic Exit Monitoring (Position Tracker)</h3>
+  <div class="exit-row">
+    <span class="tier-badge" style="background:#0a1f12;color:#00ff96;border:1px solid #00ff9644">🚀 MOONSHOT</span>
+    <span>10x from entry — Telegram alert fires, position highlighted in red to prompt exit</span>
+  </div>
+  <div class="exit-row">
+    <span class="tier-badge" style="background:#0d1a0d;color:#4cff80;border:1px solid #4cff8044">🏃 RUNNER</span>
+    <span>3–10x from entry — green alert, option to update take-profit</span>
+  </div>
+  <div class="exit-row">
+    <span class="tier-badge" style="background:#1a1a0d;color:#ffdd44;border:1px solid #ffdd4444">📈 MODERATE</span>
+    <span>1.5–3x from entry — soft notification</span>
+  </div>
+  <div class="exit-row">
+    <span class="tier-badge" style="background:#1a0d0d;color:#ff8844;border:1px solid #ff884444">⚠️ BREAK-EVEN</span>
+    <span>Price drops back to entry price + 0.5% (fees) — urgent Telegram alert to cut position</span>
+  </div>
+  <div class="exit-row">
+    <span class="tier-badge" style="background:#1f0808;color:#ff4444;border:1px solid #ff444444">💀 STOP-LOSS</span>
+    <span>Optional hard stop at -30% — configurable in Settings</span>
+  </div>
+</div>
+
+<div style="padding:12px 14px;background:#0d0d0d;border:1px solid #1e1e1e;border-radius:8px;font-size:12px;color:#555;line-height:1.6;">
+  Does this architecture look right? Any section you'd like to change before I write the full spec?
+</div>
+
+</body>
+</html>

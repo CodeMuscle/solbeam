@@ -1,0 +1,42 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]: K
+      - generic [ref=e5]:
+        - emphasis [ref=e6]: Karoshi
+        - text: .Fun
+    - generic [ref=e7]:
+      - generic [ref=e8]: Intelligence
+      - link "🔍 Shadow Monitor Live" [ref=e9] [cursor=pointer]:
+        - /url: /dashboard
+        - generic [ref=e10]: 🔍
+        - generic [ref=e11]: Shadow Monitor
+        - generic [ref=e12]: Live
+      - link "🔒 Alpha Scanner PRO" [ref=e13] [cursor=pointer]:
+        - /url: /upgrade
+        - generic [ref=e14]: 🔒
+        - generic [ref=e15]: Alpha Scanner
+        - generic [ref=e16]: PRO
+      - link "🔒 Trade Signals PRO" [ref=e17] [cursor=pointer]:
+        - /url: /upgrade
+        - generic [ref=e18]: 🔒
+        - generic [ref=e19]: Trade Signals
+        - generic [ref=e20]: PRO
+      - generic [ref=e21]: Tools
+      - link "🔒 Portfolio PRO" [ref=e22] [cursor=pointer]:
+        - /url: /upgrade
+        - generic [ref=e23]: 🔒
+        - generic [ref=e24]: Portfolio
+        - generic [ref=e25]: PRO
+      - link "🔒 EW Tracker PRO" [ref=e26] [cursor=pointer]:
+        - /url: /upgrade
+        - generic [ref=e27]: 🔒
+        - generic [ref=e28]: EW Tracker
+        - generic [ref=e29]: PRO
+    - generic [ref=e30]:
+      - generic [ref=e31]: ganeshgovind11@gmail.com
+      - link "Sign out" [ref=e32] [cursor=pointer]:
+        - /url: /logout
+  - main [ref=e33]:
+    - iframe [ref=e34]:
+      - generic [ref=f2e5]: Loading shadow data...

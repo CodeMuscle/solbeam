@@ -1,0 +1,22 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]: K
+    - heading "Karoshi.Fun" [level=1] [ref=e5]
+  - generic [ref=e6]:
+    - heading "Welcome back" [level=2] [ref=e7]
+    - paragraph [ref=e8]: Sign in to your dashboard
+    - generic [ref=e9]:
+      - generic [ref=e10]:
+        - generic [ref=e11]: Email
+        - textbox "you@example.com" [active] [ref=e12]
+      - generic [ref=e13]:
+        - generic [ref=e14]: Password
+        - textbox "Min 8 characters" [ref=e15]
+      - button "Sign in" [ref=e16] [cursor=pointer]
+  - paragraph [ref=e17]:
+    - text: No account?
+    - link "Create one" [ref=e18] [cursor=pointer]:
+      - /url: /signup
+  - paragraph [ref=e19]:
+    - link "Forgot password?" [ref=e20] [cursor=pointer]:
+      - /url: /forgot-password

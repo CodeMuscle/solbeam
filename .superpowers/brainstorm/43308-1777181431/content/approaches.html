@@ -1,0 +1,89 @@
+<h2>SolBeam — 3 Architecture Approaches</h2>
+<p class="subtitle">How we build the data pipeline that powers the signal engine</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>DexScreener-First (Poller)</h3>
+      <p>Use DexScreener as the single source of truth. Poll every 10–30s for new pairs, trending tokens, OHLCV, and volume spikes. Jupiter for live prices. No Helius webhooks needed.</p>
+      <div class="pros-cons">
+        <div class="pros">
+          <h4>Pros</h4>
+          <ul>
+            <li>Fastest to build (days not weeks)</li>
+            <li>Zero infrastructure complexity</li>
+            <li>100% free, no webhook setup</li>
+            <li>DexScreener covers Pump.fun + Raydium + all DEXes</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h4>Cons</h4>
+          <ul>
+            <li>10–30s discovery lag — miss the very first minute</li>
+            <li>No smart money wallet tracking</li>
+            <li>No on-chain deployer history analysis</li>
+            <li>Weakest signal set of the three</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Helius-First (Webhook)</h3>
+      <p>Helius webhooks fire the instant a tracked smart money wallet transacts. Near real-time token discovery (&lt;1s lag). DexScreener fills in token metrics after discovery.</p>
+      <div class="pros-cons">
+        <div class="pros">
+          <h4>Pros</h4>
+          <ul>
+            <li>Real-time smart money signal — the highest-alpha input</li>
+            <li>Sub-second discovery when a whale enters</li>
+            <li>Deployer history + tx parsing via Helius DAS API</li>
+            <li>Still free (1M credits/mo on Helius free tier)</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h4>Cons</h4>
+          <ul>
+            <li>Only discovers tokens that smart wallets touch — misses organic launches</li>
+            <li>Requires curating a smart wallet list manually</li>
+            <li>Webhook needs live URL (Vercel works fine)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>⭐ Hybrid Pipeline (Recommended)</h3>
+      <p>Three parallel discovery channels feeding one scoring engine. DexScreener polls for all new/trending tokens. Helius webhooks fire when smart money enters. Jupiter streams live prices for position monitoring.</p>
+      <div class="pros-cons">
+        <div class="pros">
+          <h4>Pros</h4>
+          <ul>
+            <li>Covers all three token categories you wanted (new launches + migrations + trending)</li>
+            <li>Smart money signal AND broad token discovery</li>
+            <li>Position monitoring loop for break-even stop-loss alerts</li>
+            <li>All free — Helius + DexScreener + Jupiter + Supabase Realtime</li>
+            <li>Best foundation to later add semi-auto / full-bot mode</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h4>Cons</h4>
+          <ul>
+            <li>More moving parts than A or B</li>
+            <li>Takes 1–2 extra days to wire the pipeline vs Approach A</li>
+          </ul>
+        </div>
+      </div>
+      <div style="margin-top:12px;padding:10px 14px;background:rgba(0,255,150,0.08);border-left:3px solid #00ff96;border-radius:4px;font-size:13px;color:#ccc;">
+        <strong style="color:#00ff96">Why this wins:</strong> Smart money entry is the single highest-signal factor for memecoin pumps. Without it, you're just reading candles like everyone else. The hybrid gives you that edge on every token.
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,2 @@
+[     532ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) %o @ https://karoshi.fun/login:0
+[    1273ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ https://karoshi.fun/favicon.ico:0
