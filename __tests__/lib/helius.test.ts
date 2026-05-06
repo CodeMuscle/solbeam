@@ -32,14 +32,14 @@ const makePayload = (overrides: Partial<HeliusWebhookPayload[0]> = {}): HeliusWe
 
 describe('parseWebhookTransaction', () => {
   it('extracts signature, wallet, timestamp from a SWAP payload', () => {
-    const result = parseWebhookTransaction(makePayload()[0])
+    const result = parseWebhookTransaction(makePayload()[0])!
     expect(result.signature).toBe('sig123abc')
     expect(result.walletAddress).toBe('wallet1abc')
     expect(result.timestamp).toBeInstanceOf(Date)
   })
 
   it('identifies the traded token mint (non-SOL side of SWAP)', () => {
-    const result = parseWebhookTransaction(makePayload()[0])
+    const result = parseWebhookTransaction(makePayload()[0])!
     expect(result.tokenMint).toBe('tokenMint123')
   })
 
