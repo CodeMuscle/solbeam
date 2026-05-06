@@ -8,7 +8,7 @@ export interface HeliusTokenTransfer {
   toUserAccount: string
 }
 
-export interface HeliusWebhookPayload extends Array<{
+export type HeliusWebhookPayload = Array<{
   signature: string
   timestamp: number
   type: string
@@ -16,7 +16,7 @@ export interface HeliusWebhookPayload extends Array<{
   feePayer: string
   tokenTransfers: HeliusTokenTransfer[]
   nativeTransfers: Array<{ fromUserAccount: string; toUserAccount: string; amount: number }>
-}> {}
+}>
 
 export interface ParsedTransaction {
   signature: string
