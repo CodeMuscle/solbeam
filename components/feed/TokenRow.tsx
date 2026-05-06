@@ -40,8 +40,26 @@ export function TokenRow({ token, isSelected, onSelect }: Props) {
       </td>
       <td className="px-4 py-3">
         <button
-          onClick={(e) => { e.stopPropagation() }}
-          className="text-xs px-2.5 py-1 rounded border border-[#2a2a2a] text-[#666] hover:border-green-500/50 hover:text-green-400 transition-colors"
+          onClick={async (e) => {
+            e.stopPropagation()
+            if (!token.price_usd) return
+            const res = await fetch('/api/positions', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                token_mint: token.mint,
+                token_symbol: token.symbol,
+                entry_price_usd: token.price_usd,
+                entry_score: token.score,
+                mode: 'paper',
+              }),
+            })
+            if (res.ok) {
+              window.location.href = '/positions'
+            }
+          }}
+          disabled={!token.price_usd}
+          className="text-xs px-2.5 py-1 rounded border border-[#2a2a2a] text-[#666] hover:border-green-500/50 hover:text-green-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
         >
           Paper Buy
         </button>
