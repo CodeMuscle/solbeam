@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/scan",
       "schedule": "*/1 * * * *"
+    },
+    {
+      "path": "/api/cron/exit-monitor",
+      "schedule": "*/1 * * * *"
     }
   ]
 }
