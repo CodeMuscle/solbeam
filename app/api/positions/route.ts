@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
-import { fetchPrice } from '@/lib/jupiter'
+import { getCurrentPrices } from '@/lib/prices'
 import { calcPnlPct } from '@/lib/exit-monitor'
 
 export async function GET(): Promise<NextResponse> {
@@ -15,10 +15,7 @@ export async function GET(): Promise<NextResponse> {
   }
 
   const mints = [...new Set(data.map((p) => p.token_mint).filter(Boolean))]
-  const prices = mints.length > 0
-    ? await Promise.all(mints.map((m) => fetchPrice(m).then((price) => [m, price] as const)))
-    : []
-  const priceMap = new Map(prices.filter(([, price]) => price !== null) as [string, number][])
+  const priceMap = await getCurrentPrices(mints)
 
   const enriched = data.map((position) => {
     const currentPrice = priceMap.get(position.token_mint) ?? null

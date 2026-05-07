@@ -57,12 +57,45 @@ describe('normalizeDexPairToToken', () => {
     expect(token.disqualify_reason).toContain('dumped')
   })
 
-  it('classifies tier from h24 price change', () => {
-    const moonPair = { ...fakePair, priceChange: { h24: 1000 } }
-    const runnerPair = { ...fakePair, priceChange: { h24: 200 } }
-    const flatPair = { ...fakePair, priceChange: { h24: 5 } }
+  it('classifies MOONSHOT only when 24h up >300% AND momentum confirms', () => {
+    const moonPair = {
+      ...fakePair,
+      priceChange: { h24: 500, h6: 50, h1: 10 },
+      volume: { h24: 500_000 },
+      liquidity: { usd: 50_000 },
+      txns: { h1: { buys: 100, sells: 30 } },
+    }
     expect(normalizeDexPairToToken(moonPair, 'raydium').tier).toBe('MOONSHOT')
+  })
+
+  it('downgrades a 24h pump that is reversing in last hour', () => {
+    const reversingPair = {
+      ...fakePair,
+      priceChange: { h24: 500, h6: 0, h1: -25 },
+      volume: { h24: 500_000 },
+      liquidity: { usd: 50_000 },
+    }
+    const tier = normalizeDexPairToToken(reversingPair, 'raydium').tier
+    expect(tier).not.toBe('MOONSHOT')
+  })
+
+  it('classifies RUNNER for 50-300% with healthy volume', () => {
+    const runnerPair = {
+      ...fakePair,
+      priceChange: { h24: 150, h1: -2 },
+      volume: { h24: 100_000 },
+      liquidity: { usd: 20_000 },
+    }
     expect(normalizeDexPairToToken(runnerPair, 'raydium').tier).toBe('RUNNER')
+  })
+
+  it('classifies FLAT when 24h change is small', () => {
+    const flatPair = { ...fakePair, priceChange: { h24: 5 } }
     expect(normalizeDexPairToToken(flatPair, 'raydium').tier).toBe('FLAT')
+  })
+
+  it('classifies RUG when 24h dump > 70%', () => {
+    const rugPair = { ...fakePair, priceChange: { h24: -75 } }
+    expect(normalizeDexPairToToken(rugPair, 'raydium').tier).toBe('RUG')
   })
 })
