@@ -28,6 +28,7 @@ function makeToken(overrides: Partial<Token> = {}): Token {
     smart_money_count: 2,
     deployer_address: 'deployer1',
     score_breakdown: null,
+    pair_created_at: null,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     ...overrides,
@@ -59,7 +60,7 @@ describe('filterTokens', () => {
     makeToken({ mint: 'mint4', disqualified: true, score: 0 }),
   ]
 
-  const defaultFilters: FeedFilters = { source: 'all', minScore: 0, tier: 'all' }
+  const defaultFilters: FeedFilters = { tab: 'all', source: 'all', minScore: 0, tier: 'all' }
 
   it('returns all non-disqualified tokens with default filters', () => {
     const result = filterTokens(tokens, defaultFilters)
