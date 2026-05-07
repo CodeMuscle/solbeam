@@ -8,6 +8,7 @@ import {
   formatBreakEvenAlert,
   formatStopLossAlert,
 } from '@/lib/telegram'
+import { isAlertsMuted } from '@/lib/telegram-commands'
 import type { OutcomeTier } from '@/lib/types'
 
 function isCronAuthorized(req: NextRequest): boolean {
@@ -51,8 +52,10 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 
   const mints = [...new Set(positions.map((p) => p.token_mint).filter(Boolean))]
   const priceMap = await fetchPrices(mints)
+  const alertsMuted = await isAlertsMuted()
 
   let alertsFired = 0
+  let alertsSuppressed = 0
 
   for (const position of positions) {
     const currentPrice = priceMap.get(position.token_mint)
@@ -95,8 +98,12 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       })
     }
 
-    await sendTelegramMessage(message)
-    alertsFired++
+    if (alertsMuted) {
+      alertsSuppressed++
+    } else {
+      await sendTelegramMessage(message)
+      alertsFired++
+    }
 
     const updatedAlerted = [...alreadyAlerted, exitCondition.type]
     const pnlPct = calcPnlPct(position.entry_price_usd, currentPrice)
@@ -110,5 +117,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       .eq('id', position.id)
   }
 
-  return NextResponse.json({ checked: positions.length, alerts: alertsFired })
+  return NextResponse.json({
+    checked: positions.length,
+    alerts: alertsFired,
+    suppressed: alertsSuppressed,
+  })
 }
