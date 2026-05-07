@@ -1,5 +1,5 @@
 import { supabaseAdmin } from '@/lib/supabase/admin'
-import { fetchPrices } from '@/lib/jupiter'
+import { getCurrentPrices } from '@/lib/prices'
 import { calcPnlPct } from '@/lib/exit-monitor'
 import { PositionTracker } from '@/components/positions/PositionTracker'
 import type { Position } from '@/lib/types'
@@ -20,7 +20,7 @@ export default async function PositionsPage() {
   const positions: Position[] = rows ?? []
 
   const mints = [...new Set(positions.map((p) => p.token_mint).filter(Boolean))]
-  const priceMap = mints.length > 0 ? await fetchPrices(mints) : new Map<string, number>()
+  const priceMap = await getCurrentPrices(mints)
 
   const enriched: EnrichedPosition[] = positions.map((position) => {
     const currentPrice = priceMap.get(position.token_mint) ?? null

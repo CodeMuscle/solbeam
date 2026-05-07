@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
-import { fetchPrices } from '@/lib/jupiter'
+import { getCurrentPrices } from '@/lib/prices'
 import { checkExitConditions, calcPnlPct } from '@/lib/exit-monitor'
 import {
   sendTelegramMessage,
@@ -51,7 +51,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   }
 
   const mints = [...new Set(positions.map((p) => p.token_mint).filter(Boolean))]
-  const priceMap = await fetchPrices(mints)
+  const priceMap = await getCurrentPrices(mints)
   const alertsMuted = await isAlertsMuted()
 
   let alertsFired = 0

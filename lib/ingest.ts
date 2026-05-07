@@ -8,16 +8,78 @@ function classifySource(pair: DexPair, fallback: TokenSource): TokenSource {
   return fallback
 }
 
+/**
+ * Multi-signal tier classification.
+ * A token must satisfy ALL of:
+ *   1. Primary 24h move passes the band's threshold
+ *   2. Recent momentum (1h) confirms — not faking out
+ *   3. Volume + liquidity sanity (no high-tier ratings on illiquid coins)
+ *   4. Buy/sell pressure aligns with direction
+ */
 function classifyLiveTier(pair: DexPair): OutcomeTier | null {
   const h24 = pair.priceChange?.h24
+  const h6 = pair.priceChange?.h6
+  const h1 = pair.priceChange?.h1
   if (h24 === undefined || h24 === null) return null
-  const multiplier = 1 + h24 / 100
-  if (multiplier >= 10) return 'MOONSHOT'
-  if (multiplier >= 3) return 'RUNNER'
-  if (multiplier >= 1.5) return 'MODERATE_PUMP'
-  if (multiplier >= 0.8) return 'FLAT'
-  if (multiplier > 0.3) return 'DUMP'
-  return 'RUG'
+
+  const liq = pair.liquidity?.usd ?? 0
+  const vol24 = pair.volume?.h24 ?? 0
+  const buys = pair.txns?.h1?.buys ?? 0
+  const sells = pair.txns?.h1?.sells ?? 0
+  const buySellRatio = sells > 0 ? buys / sells : buys > 0 ? 5 : 1
+
+  // Hard rug detectors (any one triggers RUG)
+  if (h24 <= -70) return 'RUG'
+  if (liq > 0 && liq < 1500) return 'RUG'
+  if (h24 <= -50 && (h1 ?? 0) < -10) return 'RUG'
+
+  // DUMP: down materially with continued weakness
+  if (h24 <= -25 || (h24 < -10 && (h1 ?? 0) < -5)) return 'DUMP'
+
+  // MOONSHOT requires:
+  //  - >300% over 24h
+  //  - h6 still positive (uptrend not reversing)
+  //  - h1 not crashing (not actively dumping right now)
+  //  - real volume ($250k+ in 24h)
+  //  - more buys than sells in last hour
+  //  - decent liquidity ($25k+) so it's exitable
+  if (
+    h24 >= 300 &&
+    (h6 ?? 0) > 0 &&
+    (h1 ?? 0) > -15 &&
+    vol24 >= 250_000 &&
+    buySellRatio >= 1.2 &&
+    liq >= 25_000
+  ) {
+    return 'MOONSHOT'
+  }
+
+  // RUNNER requires:
+  //  - 50–300% over 24h
+  //  - momentum continuing OR consolidating (h1 > -10)
+  //  - $50k+ in 24h volume
+  //  - liquidity > $15k
+  if (
+    h24 >= 50 &&
+    (h1 ?? 0) > -10 &&
+    vol24 >= 50_000 &&
+    liq >= 15_000
+  ) {
+    return 'RUNNER'
+  }
+
+  // MODERATE_PUMP requires:
+  //  - 10–50% over 24h
+  //  - some volume
+  if (h24 >= 10 && vol24 >= 10_000) return 'MODERATE_PUMP'
+
+  // Anything between -10% and +10% with weak signals = FLAT
+  if (h24 >= -10 && h24 < 10) return 'FLAT'
+
+  // Caught between bands (e.g., 50% pump but illiquid) = stricter MODERATE_PUMP fallback
+  if (h24 >= 10) return 'MODERATE_PUMP'
+
+  return 'DUMP'
 }
 
 function checkLiveDisqualifiers(pair: DexPair): string | null {
