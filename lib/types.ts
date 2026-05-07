@@ -71,6 +71,7 @@ export interface Token {
   smart_money_count: number
   deployer_address: string | null
   score_breakdown: ScoreBreakdown | null
+  pair_created_at: string | null
   created_at: string
   updated_at: string
 }

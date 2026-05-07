@@ -1,6 +1,9 @@
 import type { Token, TokenSource, OutcomeTier } from './types'
 
+export type FeedTab = 'all' | 'established' | 'gems'
+
 export interface FeedFilters {
+  tab: FeedTab
   source: TokenSource | 'all'
   minScore: number
   tier: OutcomeTier | 'all'
@@ -58,6 +61,37 @@ export function formatAge(createdAt: string): string {
   return `${Math.floor(diffHr / 24)}d`
 }
 
+const ONE_DAY_MS = 24 * 60 * 60 * 1000
+
+function pairAgeDays(token: Token): number | null {
+  if (!token.pair_created_at) return null
+  return (Date.now() - new Date(token.pair_created_at).getTime()) / ONE_DAY_MS
+}
+
+function matchesTab(token: Token, tab: FeedTab): boolean {
+  if (tab === 'all') return true
+
+  const ageDays = pairAgeDays(token)
+  const liq = token.liquidity_usd ?? 0
+  const vol24 = token.volume_24h_usd ?? 0
+
+  if (tab === 'established') {
+    return ageDays !== null && ageDays >= 30 && liq >= 50_000 && vol24 >= 10_000
+  }
+
+  if (tab === 'gems') {
+    return (
+      ageDays !== null &&
+      ageDays >= 1 &&
+      ageDays <= 60 &&
+      token.score >= 50 &&
+      liq >= 20_000
+    )
+  }
+
+  return true
+}
+
 export function filterTokens(
   tokens: Token[],
   filters: FeedFilters
@@ -66,6 +100,7 @@ export function filterTokens(
   const active = tokens.filter((t) => !t.disqualified)
 
   const qualified = active.filter((t) => {
+    if (!matchesTab(t, filters.tab)) return false
     if (filters.source !== 'all' && t.source !== filters.source) return false
     if (t.score < filters.minScore) return false
     if (filters.tier !== 'all' && t.tier !== filters.tier) return false

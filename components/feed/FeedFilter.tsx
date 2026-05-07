@@ -1,6 +1,6 @@
 'use client'
 
-import type { FeedFilters } from '@/lib/feed-utils'
+import type { FeedFilters, FeedTab } from '@/lib/feed-utils'
 import type { TokenSource, OutcomeTier } from '@/lib/types'
 
 interface Props {
@@ -8,6 +8,12 @@ interface Props {
   onChange: (filters: FeedFilters) => void
   tokenCount: number
 }
+
+const tabs: Array<{ value: FeedTab; label: string; hint: string }> = [
+  { value: 'all', label: 'All', hint: 'Every active token' },
+  { value: 'established', label: '🏛 Established', hint: 'Pair age 30d+, liq ≥ $50k, vol ≥ $10k' },
+  { value: 'gems', label: '💎 New Gems', hint: 'Pair age 1–60d, score ≥ 50, liq ≥ $20k' },
+]
 
 const sources: Array<{ value: TokenSource | 'all'; label: string }> = [
   { value: 'all', label: 'All' },
@@ -27,8 +33,31 @@ const tiers: Array<{ value: OutcomeTier | 'all'; label: string }> = [
 ]
 
 export function FeedFilter({ filters, onChange, tokenCount }: Props) {
+  const activeTabHint = tabs.find((t) => t.value === filters.tab)?.hint
+
   return (
-    <div className="flex items-center gap-4 px-4 py-3 border-b border-[#1a1a1a] bg-[#0a0a0a] flex-wrap">
+    <div className="border-b border-[#1a1a1a] bg-[#0a0a0a]">
+      <div className="flex items-center gap-1 px-4 pt-3">
+        {tabs.map((t) => (
+          <button
+            key={t.value}
+            onClick={() => onChange({ ...filters, tab: t.value })}
+            title={t.hint}
+            className={`text-sm px-4 py-2 rounded-t border-b-2 transition-colors ${
+              filters.tab === t.value
+                ? 'text-white border-green-500 bg-[#0e0e0e]'
+                : 'text-[#666] border-transparent hover:text-[#aaa]'
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+        {activeTabHint && (
+          <span className="ml-3 text-[#444] text-xs hidden md:inline">{activeTabHint}</span>
+        )}
+      </div>
+
+    <div className="flex items-center gap-4 px-4 py-3 flex-wrap">
       <div className="flex items-center gap-1">
         {sources.map((s) => (
           <button
@@ -76,6 +105,7 @@ export function FeedFilter({ filters, onChange, tokenCount }: Props) {
       <span className="ml-auto text-[#444] text-xs tabular-nums">
         {tokenCount} token{tokenCount !== 1 ? 's' : ''}
       </span>
+      </div>
     </div>
   )
 }

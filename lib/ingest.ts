@@ -58,6 +58,9 @@ export function normalizeDexPairToToken(
     smart_money_count: 0,
     deployer_address: null,
     score_breakdown: null,
+    pair_created_at: pair.pairCreatedAt
+      ? new Date(pair.pairCreatedAt).toISOString()
+      : null,
   }
 }
 

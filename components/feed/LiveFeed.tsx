@@ -14,7 +14,7 @@ interface Props {
   initialTokens: Token[]
 }
 
-const DEFAULT_FILTERS: FeedFilters = { source: 'all', minScore: 0, tier: 'all' }
+const DEFAULT_FILTERS: FeedFilters = { tab: 'all', source: 'all', minScore: 0, tier: 'all' }
 
 export function LiveFeed({ initialTokens }: Props) {
   const tokens = useRealtimeTokens(initialTokens)
