@@ -35,19 +35,27 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const [newPairs, trendingPairs] = await Promise.all([
-    fetchNewSolanaPairs(),
-    fetchTrendingTokens(),
-  ])
+  try {
+    const [newPairs, trendingPairs] = await Promise.all([
+      fetchNewSolanaPairs(),
+      fetchTrendingTokens(),
+    ])
 
-  const [newCount, trendingCount] = await Promise.all([
-    upsertTokens(newPairs, 'raydium'),
-    upsertTokens(trendingPairs, 'trending'),
-  ])
+    console.log(`[scan] Fetched ${newPairs.length} new + ${trendingPairs.length} trending pairs`)
 
-  return NextResponse.json({
-    new: newCount,
-    trending: trendingCount,
-    total: newCount + trendingCount,
-  })
+    const [newCount, trendingCount] = await Promise.all([
+      upsertTokens(newPairs, 'raydium'),
+      upsertTokens(trendingPairs, 'trending'),
+    ])
+
+    return NextResponse.json({
+      new: newCount,
+      trending: trendingCount,
+      total: newCount + trendingCount,
+    })
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error)
+    console.error('[scan] Failed:', msg, error)
+    return NextResponse.json({ error: msg }, { status: 500 })
+  }
 }
