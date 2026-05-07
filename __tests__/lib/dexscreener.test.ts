@@ -33,15 +33,25 @@ const fakePair: DexPair = {
 }
 
 describe('fetchNewSolanaPairs', () => {
-  it('returns pairs array from DexScreener response', async () => {
+  it('returns enriched pairs from token-profiles → /dex/tokens flow', async () => {
+    mockFetch([{ chainId: 'solana', tokenAddress: 'mint123' }])
     mockFetch({ pairs: [fakePair] })
     const pairs = await fetchNewSolanaPairs()
     expect(pairs).toHaveLength(1)
     expect(pairs[0].baseToken.symbol).toBe('WOJAK')
   })
 
-  it('returns empty array when DexScreener returns no pairs', async () => {
-    mockFetch({ pairs: null })
+  it('returns empty array when token-profiles response is empty', async () => {
+    mockFetch([])
+    const pairs = await fetchNewSolanaPairs()
+    expect(pairs).toEqual([])
+  })
+
+  it('filters out non-solana profiles', async () => {
+    mockFetch([
+      { chainId: 'ethereum', tokenAddress: 'eth1' },
+      { chainId: 'base', tokenAddress: 'base1' },
+    ])
     const pairs = await fetchNewSolanaPairs()
     expect(pairs).toEqual([])
   })
@@ -54,7 +64,8 @@ describe('fetchNewSolanaPairs', () => {
 })
 
 describe('fetchTrendingTokens', () => {
-  it('returns trending pairs', async () => {
+  it('returns enriched pairs from token-boosts → /dex/tokens flow', async () => {
+    mockFetch([{ chainId: 'solana', tokenAddress: 'mint123' }])
     mockFetch({ pairs: [fakePair] })
     const pairs = await fetchTrendingTokens()
     expect(pairs).toHaveLength(1)
@@ -62,7 +73,7 @@ describe('fetchTrendingTokens', () => {
 })
 
 describe('fetchTokenPair', () => {
-  it('returns the first pair for a given mint', async () => {
+  it('returns the highest-liquidity solana pair for a given mint', async () => {
     mockFetch({ pairs: [fakePair] })
     const pair = await fetchTokenPair('mint123')
     expect(pair).not.toBeNull()
