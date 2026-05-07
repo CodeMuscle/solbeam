@@ -31,6 +31,15 @@ function checkLiveDisqualifiers(pair: DexPair): string | null {
   return null
 }
 
+// pump.fun tokens graduate at ~$69k mcap. Estimate bonding-curve completion %.
+const PUMPFUN_GRADUATION_MCAP = 69_000
+function estimateBondingCurvePct(pair: DexPair): number | null {
+  if (pair.dexId !== 'pumpfun' && pair.dexId !== 'pump-fun') return null
+  const mcap = pair.marketCap ?? 0
+  if (mcap <= 0) return 0
+  return Math.min(100, Math.round((mcap / PUMPFUN_GRADUATION_MCAP) * 100))
+}
+
 export function normalizeDexPairToToken(
   pair: DexPair,
   sourceFallback: TokenSource
@@ -61,6 +70,10 @@ export function normalizeDexPairToToken(
     pair_created_at: pair.pairCreatedAt
       ? new Date(pair.pairCreatedAt).toISOString()
       : null,
+    socials: pair.info?.socials ?? null,
+    websites: pair.info?.websites ?? null,
+    image_url: pair.info?.imageUrl ?? null,
+    bonding_curve_pct: estimateBondingCurvePct(pair),
   }
 }
 

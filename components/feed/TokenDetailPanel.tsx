@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { ScorePill } from './ScorePill'
 import { TierBadge } from './TierBadge'
 import { SourceBadge } from './SourceBadge'
@@ -22,20 +23,54 @@ function ScoreRow({ label, pts, max }: { label: string; pts: number; max: number
   )
 }
 
+const SOCIAL_LABELS: Record<string, string> = {
+  twitter: '𝕏 Twitter',
+  telegram: '✈ Telegram',
+  discord: '💬 Discord',
+  github: '⌨ GitHub',
+  reddit: '👽 Reddit',
+}
+
+function socialLabel(type: string): string {
+  return SOCIAL_LABELS[type.toLowerCase()] ?? type
+}
+
+const EXTERNAL_TOOLS = (mint: string) => [
+  { label: '📊 DexScreener', href: `https://dexscreener.com/solana/${mint}` },
+  { label: '⚡ GMGN', href: `https://gmgn.ai/sol/token/${mint}` },
+  { label: '🦅 Birdeye', href: `https://birdeye.so/token/${mint}?chain=solana` },
+  { label: '🫧 Bubblemaps', href: `https://app.bubblemaps.io/sol/token/${mint}` },
+  { label: '🔍 Solscan', href: `https://solscan.io/token/${mint}` },
+  { label: '🪄 Magic Eden', href: `https://magiceden.io/marketplace/${mint}` },
+]
+
 export function TokenDetailPanel({ token, onClose }: Props) {
   const bd = token.score_breakdown
+  const bondingPct = token.bonding_curve_pct
 
   return (
     <div className="fixed right-0 top-0 h-screen w-80 bg-[#0a0a0a] border-l border-[#1a1a1a] flex flex-col z-40 overflow-y-auto">
       <div className="flex items-center justify-between px-4 py-4 border-b border-[#1a1a1a]">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="text-white font-semibold">{token.symbol}</span>
-            <SourceBadge source={token.source} />
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          {token.image_url && (
+            <Image
+              src={token.image_url}
+              alt={token.symbol ?? ''}
+              width={36}
+              height={36}
+              className="rounded-full bg-[#1a1a1a] flex-shrink-0"
+              unoptimized
+            />
+          )}
+          <div className="flex flex-col min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="text-white font-semibold truncate">{token.symbol}</span>
+              <SourceBadge source={token.source} />
+            </div>
+            <span className="text-[#444] text-xs font-mono truncate">{token.mint.slice(0, 16)}…</span>
           </div>
-          <span className="text-[#444] text-xs font-mono">{token.mint.slice(0, 16)}…</span>
         </div>
-        <button onClick={onClose} className="text-[#444] hover:text-[#888] text-lg leading-none">✕</button>
+        <button onClick={onClose} className="text-[#444] hover:text-[#888] text-lg leading-none ml-2 flex-shrink-0">✕</button>
       </div>
 
       <div className="flex items-center gap-3 px-4 py-4 border-b border-[#1a1a1a]">
@@ -43,6 +78,26 @@ export function TokenDetailPanel({ token, onClose }: Props) {
         <TierBadge tier={token.tier} />
         <span className="text-[#555] text-xs ml-auto">{formatAge(token.created_at)} ago</span>
       </div>
+
+      {bondingPct !== null && bondingPct < 100 && (
+        <div className="px-4 py-3 border-b border-[#1a1a1a]">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-[#555] text-xs uppercase tracking-widest">🚀 Bonding Curve</span>
+            <span className="text-amber-400 text-xs font-mono tabular-nums">{bondingPct}%</span>
+          </div>
+          <div className="h-1.5 bg-[#1a1a1a] rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-amber-500/60 to-green-500/60 rounded-full"
+              style={{ width: `${bondingPct}%` }}
+            />
+          </div>
+          <p className="text-[#333] text-xs mt-1">
+            {bondingPct >= 80
+              ? '⚠ About to graduate to Raydium'
+              : 'Pump.fun bonding curve progress (mcap-derived)'}
+          </p>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-px bg-[#141414] border-b border-[#1a1a1a]">
         {[
@@ -57,6 +112,36 @@ export function TokenDetailPanel({ token, onClose }: Props) {
           </div>
         ))}
       </div>
+
+      {(token.socials?.length || token.websites?.length) ? (
+        <div className="px-4 py-3 border-b border-[#1a1a1a]">
+          <h3 className="text-[#555] text-xs uppercase tracking-widest mb-2">Project Links</h3>
+          <div className="flex flex-wrap gap-1.5">
+            {token.websites?.map((w) => (
+              <a
+                key={w.url}
+                href={w.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs px-2 py-1 rounded bg-[#111] border border-[#1e1e1e] text-[#888] hover:text-[#ccc] hover:border-[#2a2a2a]"
+              >
+                🌐 {w.label ?? 'Website'}
+              </a>
+            ))}
+            {token.socials?.map((s) => (
+              <a
+                key={`${s.type}-${s.url}`}
+                href={s.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs px-2 py-1 rounded bg-[#111] border border-[#1e1e1e] text-[#888] hover:text-[#ccc] hover:border-[#2a2a2a]"
+              >
+                {socialLabel(s.type)}
+              </a>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       <div className="px-4 py-3">
         <h3 className="text-[#555] text-xs uppercase tracking-widest mb-3">Score Breakdown</h3>
@@ -75,14 +160,26 @@ export function TokenDetailPanel({ token, onClose }: Props) {
           </>
         ) : (
           <p className="text-[#444] text-xs">
-            Score breakdown not available — click a token from the feed after scoring runs.
+            Score breakdown not available — wait for the next cron tick.
           </p>
         )}
       </div>
 
-      <div className="px-4 py-3 mt-auto border-t border-[#1a1a1a] flex flex-col gap-2">
-        <a href={`https://dexscreener.com/solana/${token.mint}`} target="_blank" rel="noopener noreferrer" className="text-xs text-[#555] hover:text-[#888] transition-colors">View on DexScreener ↗</a>
-        <a href={`https://gmgn.ai/sol/token/${token.mint}`} target="_blank" rel="noopener noreferrer" className="text-xs text-[#555] hover:text-[#888] transition-colors">Trade on GMGN ↗</a>
+      <div className="px-4 py-3 mt-auto border-t border-[#1a1a1a]">
+        <h3 className="text-[#555] text-xs uppercase tracking-widest mb-2">Open in</h3>
+        <div className="grid grid-cols-2 gap-1.5">
+          {EXTERNAL_TOOLS(token.mint).map(({ label, href }) => (
+            <a
+              key={label}
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs px-2 py-1.5 rounded bg-[#0d0d0d] border border-[#1a1a1a] text-[#666] hover:text-[#ccc] hover:border-[#2a2a2a] text-center"
+            >
+              {label} ↗
+            </a>
+          ))}
+        </div>
       </div>
     </div>
   )

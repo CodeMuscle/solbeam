@@ -1,19 +1,34 @@
+import { supabaseAdmin } from '@/lib/supabase/admin'
+import { fetchPrices } from '@/lib/jupiter'
+import { calcPnlPct } from '@/lib/exit-monitor'
 import { PositionTracker } from '@/components/positions/PositionTracker'
+import type { Position } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
 
-export default async function PositionsPage() {
-  const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
-    ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-    : 'http://localhost:3000'
+interface EnrichedPosition extends Position {
+  current_price_usd: number | null
+}
 
-  let positions = []
-  try {
-    const res = await fetch(`${baseUrl}/api/positions`, { cache: 'no-store' })
-    if (res.ok) positions = await res.json()
-  } catch {
-    // Positions empty on first load if API unreachable
-  }
+export default async function PositionsPage() {
+  const { data: rows } = await supabaseAdmin
+    .from('positions')
+    .select('*')
+    .eq('status', 'open')
+    .order('entry_timestamp', { ascending: false })
+
+  const positions: Position[] = rows ?? []
+
+  const mints = [...new Set(positions.map((p) => p.token_mint).filter(Boolean))]
+  const priceMap = mints.length > 0 ? await fetchPrices(mints) : new Map<string, number>()
+
+  const enriched: EnrichedPosition[] = positions.map((position) => {
+    const currentPrice = priceMap.get(position.token_mint) ?? null
+    const pnlPct = currentPrice
+      ? calcPnlPct(position.entry_price_usd, currentPrice)
+      : position.pnl_pct
+    return { ...position, current_price_usd: currentPrice, pnl_pct: pnlPct }
+  })
 
   return (
     <div className="flex flex-col h-screen">
@@ -26,7 +41,7 @@ export default async function PositionsPage() {
         </div>
       </div>
 
-      <PositionTracker initialPositions={positions} />
+      <PositionTracker initialPositions={enriched} />
     </div>
   )
 }

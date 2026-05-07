@@ -25,8 +25,9 @@ export interface DexPair {
     h24?: number
   }
   info?: {
+    imageUrl?: string
     socials?: Array<{ type: string; url: string }>
-    websites?: Array<{ url: string }>
+    websites?: Array<{ url: string; label?: string }>
   }
 }
 

@@ -72,6 +72,10 @@ export interface Token {
   deployer_address: string | null
   score_breakdown: ScoreBreakdown | null
   pair_created_at: string | null
+  socials: Array<{ type: string; url: string }> | null
+  websites: Array<{ url: string; label?: string }> | null
+  image_url: string | null
+  bonding_curve_pct: number | null
   created_at: string
   updated_at: string
 }
