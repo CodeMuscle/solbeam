@@ -18,6 +18,12 @@ export interface DexPair {
     h1?: { buys: number; sells: number }
     m5?: { buys: number; sells: number }
   }
+  priceChange?: {
+    m5?: number
+    h1?: number
+    h6?: number
+    h24?: number
+  }
   info?: {
     socials?: Array<{ type: string; url: string }>
     websites?: Array<{ url: string }>

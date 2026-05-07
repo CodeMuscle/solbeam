@@ -18,11 +18,11 @@ export function TokenRow({ token, isSelected, onSelect }: Props) {
         isSelected ? 'bg-[#141414]' : 'hover:bg-[#0f0f0f]'
       }`}
     >
-      <td className="px-4 py-3">
+      <td className="px-4 py-3 min-w-[240px]">
         <div className="flex flex-col">
           <span className="text-white font-semibold text-sm">{token.symbol ?? '—'}</span>
-          <span className="text-[#555] text-xs font-mono truncate max-w-[100px]">
-            {token.mint.slice(0, 8)}…
+          <span className="text-[#555] text-xs font-mono">
+            {token.mint.slice(0, 8)}…{token.mint.slice(-4)}
           </span>
         </div>
       </td>
@@ -42,20 +42,30 @@ export function TokenRow({ token, isSelected, onSelect }: Props) {
         <button
           onClick={async (e) => {
             e.stopPropagation()
-            if (!token.price_usd) return
-            const res = await fetch('/api/positions', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                token_mint: token.mint,
-                token_symbol: token.symbol,
-                entry_price_usd: token.price_usd,
-                entry_score: token.score,
-                mode: 'paper',
-              }),
-            })
-            if (res.ok) {
-              window.location.href = '/positions'
+            if (!token.price_usd) {
+              alert('No live price available yet — wait for the next cron tick.')
+              return
+            }
+            try {
+              const res = await fetch('/api/positions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  token_mint: token.mint,
+                  token_symbol: token.symbol,
+                  entry_price_usd: token.price_usd,
+                  entry_score: token.score,
+                  mode: 'paper',
+                }),
+              })
+              if (res.ok) {
+                window.location.href = '/positions'
+                return
+              }
+              const body = await res.json().catch(() => ({}))
+              alert(`Paper buy failed (${res.status}): ${body.error ?? 'unknown error'}`)
+            } catch (err) {
+              alert(`Network error: ${err instanceof Error ? err.message : String(err)}`)
             }
           }}
           disabled={!token.price_usd}
