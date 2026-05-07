@@ -8,6 +8,7 @@ const POLL_INTERVAL_MS = 30_000
 
 export function useRealtimeTokens(initialTokens: Token[]) {
   const [tokens, setTokens] = useState<Token[]>(initialTokens)
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
 
   const refetch = useCallback(async () => {
     const supabase = createClient()
@@ -16,7 +17,10 @@ export function useRealtimeTokens(initialTokens: Token[]) {
       .select('*')
       .order('created_at', { ascending: false })
       .limit(100)
-    if (data) setTokens(data as Token[])
+    if (data) {
+      setTokens(data as Token[])
+      setLastUpdated(new Date())
+    }
   }, [])
 
   useEffect(() => {
@@ -45,6 +49,7 @@ export function useRealtimeTokens(initialTokens: Token[]) {
               prev.filter((t) => t.mint !== (payload.old as Token).mint)
             )
           }
+          setLastUpdated(new Date())
         }
       )
       .subscribe()
@@ -63,5 +68,5 @@ export function useRealtimeTokens(initialTokens: Token[]) {
     }
   }, [refetch])
 
-  return tokens
+  return { tokens, lastUpdated, refetch }
 }
